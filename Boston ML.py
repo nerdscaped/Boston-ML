@@ -1,8 +1,8 @@
-#Boston Machine Learning
+#--------------------------------Boston Machine Learning--------------------------------
 #Code by Matt Cadel
 #Started 26/03/22
 
-#Import packages
+#-----Import packages-----
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -21,30 +21,31 @@ from sklearn.impute import IterativeImputer
 from sklearn.linear_model import BayesianRidge
 from sklearn.pipeline import make_pipeline
 
-#Boston Data Prep
+#-----Boston Data Prep-----
 boston = load_boston()
 boston_df = pd.DataFrame(boston.data, columns=boston.feature_names)
 boston_df['PRICE'] = boston.target
 
-#EDA to undestand the data
+#-----EDA to undestand the data-----
 print(boston.DESCR)
 print(boston_df.head(5))
 print(boston_df.columns)
 print(boston_df.isnull().sum()) #Check for nulls - no nulls present
+
 correlation_matrix = boston_df.corr()
 sns.heatmap(data=correlation_matrix, annot=True) #Looking good, but this is not enough. We should also have a visual on the correlations to look out for outliers
 
 variables = ['CRIM', 'ZN', 'INDUS', 'CHAS', 'NOX', 'RM', 'AGE', 'DIS', 'RAD', 'TAX', 'PTRATIO', 'B', 'LSTAT']
-
+#Scatterplots for a visual on the data - help to identify outliers
 plt.figure(figsize=(25,40))
 for i, col in enumerate(variables):
     ax = plt.subplot(3, 5, i+1)
     boston_df.plot.scatter(x=col, y='PRICE', ax=ax, label=col, legend=False,s=2)
     ax.set_title(col)
 plt.tight_layout()
-#plt.show() #This is highly informative, however a measure of the extent of outliers is needed for a more scientific analysis
+plt.show() #This is highly informative, however a measure of the extent of outliers is needed for a more scientific analysis
 
-#I will be using the Tukey method to identify the number of outliers of each variable
+#I will be using the Tukey method to identify the number of outliers of each variable, as its statistical measures e.g. IQR are robust to outliers
 
 def tukeys_method(df, variable): #This function comes from Alicia Horsch - https://towardsdatascience.com/detecting-and-treating-outliers-in-python-part-1-4ece5098b755 Else this is all my code
     #Takes two parameters: dataframe & variable of interest as string
