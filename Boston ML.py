@@ -1,8 +1,8 @@
-#--------------------------------Boston Machine Learning--------------------------------
+#Boston Machine Learning
 #Code by Matt Cadel
 #Started 26/03/22
 
-#-----Import packages-----
+#Import packages
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -21,31 +21,30 @@ from sklearn.impute import IterativeImputer
 from sklearn.linear_model import BayesianRidge
 from sklearn.pipeline import make_pipeline
 
-#-----Boston Data Prep-----
+#Boston Data Prep
 boston = load_boston()
 boston_df = pd.DataFrame(boston.data, columns=boston.feature_names)
 boston_df['PRICE'] = boston.target
 
-#-----EDA to undestand the data-----
+#EDA to undestand the data
 print(boston.DESCR)
 print(boston_df.head(5))
 print(boston_df.columns)
 print(boston_df.isnull().sum()) #Check for nulls - no nulls present
-
 correlation_matrix = boston_df.corr()
 sns.heatmap(data=correlation_matrix, annot=True) #Looking good, but this is not enough. We should also have a visual on the correlations to look out for outliers
 
 variables = ['CRIM', 'ZN', 'INDUS', 'CHAS', 'NOX', 'RM', 'AGE', 'DIS', 'RAD', 'TAX', 'PTRATIO', 'B', 'LSTAT']
-#Scatterplots for a visual on the data - help to identify outliers
+
 plt.figure(figsize=(25,40))
 for i, col in enumerate(variables):
     ax = plt.subplot(3, 5, i+1)
     boston_df.plot.scatter(x=col, y='PRICE', ax=ax, label=col, legend=False,s=2)
     ax.set_title(col)
 plt.tight_layout()
-plt.show() #This is highly informative, however a measure of the extent of outliers is needed for a more scientific analysis
+#plt.show() #This is highly informative, however a measure of the extent of outliers is needed for a more scientific analysis
 
-#I will be using the Tukey method to identify the number of outliers of each variable, as its statistical measures e.g. IQR are robust to outliers
+#I will be using the Tukey method to identify the number of outliers of each variable
 
 def tukeys_method(df, variable): #This function comes from Alicia Horsch - https://towardsdatascience.com/detecting-and-treating-outliers-in-python-part-1-4ece5098b755 Else this is all my code
     #Takes two parameters: dataframe & variable of interest as string
@@ -126,6 +125,7 @@ y_train_predict = lm.predict(X_train)
 y_test_predict = lm.predict(X_test)
 
 #Training Set
+print("ML1")
 print("Training Set")
 print('MAE:', metrics.mean_absolute_error(y_train, y_train_predict))
 print('MSE:', metrics.mean_squared_error(y_train, y_train_predict))
@@ -151,6 +151,7 @@ lm.fit(X_train,y_train)
 y_train_predict = lm.predict(X_train)
 y_test_predict = lm.predict(X_test)
 
+print("ML2")
 #Training Set
 print("Training Set")
 print('MAE:', metrics.mean_absolute_error(y_train, y_train_predict))
@@ -166,13 +167,69 @@ print('RMSE:', np.sqrt(metrics.mean_squared_error(y_test, y_test_predict)))
 print('R SQUARED', r2_score(y_test, y_test_predict))
 #Very similiar values to before, however are slightly declined. 
 
-#--------------------------------Machine Learning - 3 - without B variable outliers--------------------------------
+#--------------------------------Machine Learning - 3 - without CRIM variable--------------------------------
+x = boston_df[['B', 'ZN', 'INDUS', 'CHAS', 'NOX', 'RM', 'AGE', 'DIS', 'RAD', 'TAX', 'PTRATIO', 'LSTAT']]
+y = boston_df['PRICE']
+
+X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.35, random_state=69) 
+lm = LinearRegression()
+lm.fit(X_train,y_train)
+
+#Testing Model
+y_train_predict = lm.predict(X_train)
+y_test_predict = lm.predict(X_test)
+
+print("ML3")
+#Training Set
+print("Training Set")
+print('MAE:', metrics.mean_absolute_error(y_train, y_train_predict))
+print('MSE:', metrics.mean_squared_error(y_train, y_train_predict))
+print('RMSE:', np.sqrt(metrics.mean_squared_error(y_train, y_train_predict)))
+print('R SQUARED', r2_score(y_train, y_train_predict))
+
+#Testing Set
+print("Testing Set")
+print('MAE:', metrics.mean_absolute_error(y_test, y_test_predict))
+print('MSE:', metrics.mean_squared_error(y_test, y_test_predict))
+print('RMSE:', np.sqrt(metrics.mean_squared_error(y_test, y_test_predict)))
+print('R SQUARED', r2_score(y_test, y_test_predict))
+
+#--------------------------------Machine Learning - 4 - without ZN variable--------------------------------
+x = boston_df[['B', 'CRIM', 'INDUS', 'CHAS', 'NOX', 'RM', 'AGE', 'DIS', 'RAD', 'TAX', 'PTRATIO', 'LSTAT']]
+y = boston_df['PRICE']
+
+X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.35, random_state=69) 
+lm = LinearRegression()
+lm.fit(X_train,y_train)
+
+#Testing Model
+y_train_predict = lm.predict(X_train)
+y_test_predict = lm.predict(X_test)
+
+print("ML4")
+#Training Set
+print("Training Set")
+print('MAE:', metrics.mean_absolute_error(y_train, y_train_predict))
+print('MSE:', metrics.mean_squared_error(y_train, y_train_predict))
+print('RMSE:', np.sqrt(metrics.mean_squared_error(y_train, y_train_predict)))
+print('R SQUARED', r2_score(y_train, y_train_predict))
+
+#Testing Set
+print("Testing Set")
+print('MAE:', metrics.mean_absolute_error(y_test, y_test_predict))
+print('MSE:', metrics.mean_squared_error(y_test, y_test_predict))
+print('RMSE:', np.sqrt(metrics.mean_squared_error(y_test, y_test_predict)))
+print('R SQUARED', r2_score(y_test, y_test_predict))
+
+#--------------------------------Machine Learning - 5 - without B variable outliers--------------------------------
+print("Number of B, CIRM and ZN reported outliers =",len(tukeys_method(boston_df,'B')[0]),len(tukeys_method(boston_df,'CRIM')[0]),len(tukeys_method(boston_df,'ZN')[0]))
+
 boston_df_no_B_OL = boston_df.drop(tukeys_method(boston_df,'B')[0])  #Only the probable outliers removed
 
 x = boston_df_no_B_OL[['CRIM', 'ZN', 'INDUS', 'CHAS', 'NOX', 'RM', 'AGE', 'DIS', 'RAD', 'TAX', 'PTRATIO', 'B', 'LSTAT']]
 y = boston_df_no_B_OL['PRICE']
 
-X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.4, random_state=12) 
+X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.4, random_state=69) 
 lm = LinearRegression()
 lm.fit(X_train,y_train)
 
@@ -180,6 +237,7 @@ lm.fit(X_train,y_train)
 y_train_predict = lm.predict(X_train)
 y_test_predict = lm.predict(X_test)
 
+print("ML5")
 #Training Set
 print("Training Set")
 print('MAE:', metrics.mean_absolute_error(y_train, y_train_predict))
@@ -195,13 +253,42 @@ print('RMSE:', np.sqrt(metrics.mean_squared_error(y_test, y_test_predict)))
 print('R SQUARED', r2_score(y_test, y_test_predict))
 #Better fit on the training set, but worse on the testing
 
-#--------------------------------Machine Learning - 4 - without ZN variable outliers--------------------------------
+#--------------------------------Machine Learning - 6 - without CRIM variable outliers--------------------------------
+boston_df_no_CRIM_OL = boston_df.drop(tukeys_method(boston_df,'CRIM')[0])  #Only the probable outliers removed
+
+x = boston_df_no_CRIM_OL[['ZN', 'CRIM', 'INDUS', 'CHAS', 'NOX', 'RM', 'AGE', 'DIS', 'RAD', 'TAX', 'PTRATIO', 'B', 'LSTAT']]
+y = boston_df_no_CRIM_OL['PRICE']
+
+X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.35, random_state=69) 
+lm = LinearRegression()
+lm.fit(X_train,y_train)
+
+#Testing Model
+y_train_predict = lm.predict(X_train)
+y_test_predict = lm.predict(X_test)
+
+print("ML6")
+#Training Set
+print("Training Set")
+print('MAE:', metrics.mean_absolute_error(y_train, y_train_predict))
+print('MSE:', metrics.mean_squared_error(y_train, y_train_predict))
+print('RMSE:', np.sqrt(metrics.mean_squared_error(y_train, y_train_predict)))
+print('R SQUARED', r2_score(y_train, y_train_predict))
+
+#Testing Set
+print("Testing Set")
+print('MAE:', metrics.mean_absolute_error(y_test, y_test_predict))
+print('MSE:', metrics.mean_squared_error(y_test, y_test_predict))
+print('RMSE:', np.sqrt(metrics.mean_squared_error(y_test, y_test_predict)))
+print('R SQUARED', r2_score(y_test, y_test_predict))
+
+#--------------------------------Machine Learning - 7 - without ZN variable outliers--------------------------------
 boston_df_no_ZN_OL = boston_df.drop(tukeys_method(boston_df,'ZN')[0])  #Only the probable outliers removed
 
 x = boston_df_no_ZN_OL[['CRIM', 'ZN', 'INDUS', 'CHAS', 'NOX', 'RM', 'AGE', 'DIS', 'RAD', 'TAX', 'PTRATIO', 'B', 'LSTAT']]
 y = boston_df_no_ZN_OL['PRICE']
 
-X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.4, random_state=12) 
+X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.35, random_state=69) 
 lm = LinearRegression()
 lm.fit(X_train,y_train)
 
@@ -209,6 +296,7 @@ lm.fit(X_train,y_train)
 y_train_predict = lm.predict(X_train)
 y_test_predict = lm.predict(X_test)
 
+print("ML7")
 #Training Set
 print("Training Set")
 print('MAE:', metrics.mean_absolute_error(y_train, y_train_predict))
@@ -224,13 +312,13 @@ print('RMSE:', np.sqrt(metrics.mean_squared_error(y_test, y_test_predict)))
 print('R SQUARED', r2_score(y_test, y_test_predict))
 #Better fit on the training set, but worse on the testing
 
-#--------------------------------Machine Learning - 5 - without multivariate outliers--------------------------------
+#--------------------------------Machine Learning - 8 - without multivariate outliers--------------------------------
 boston_df_no_MV = boston_df.drop(robust_mahalanobis_method(boston_df))
 
 x = boston_df_no_MV[['CRIM', 'ZN', 'INDUS', 'CHAS', 'NOX', 'RM', 'AGE', 'DIS', 'RAD', 'TAX', 'PTRATIO', 'B', 'LSTAT']]
 y = boston_df_no_MV['PRICE']
 
-X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=12) 
+X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=52) 
 lm = LinearRegression()
 lm.fit(X_train,y_train)
 
@@ -238,6 +326,7 @@ lm.fit(X_train,y_train)
 y_train_predict = lm.predict(X_train)
 y_test_predict = lm.predict(X_test)
 
+print("ML8")
 #Training Set
 print("Training Set")
 print('MAE:', metrics.mean_absolute_error(y_train, y_train_predict))
@@ -251,3 +340,7 @@ print('MAE:', metrics.mean_absolute_error(y_test, y_test_predict))
 print('MSE:', metrics.mean_squared_error(y_test, y_test_predict))
 print('RMSE:', np.sqrt(metrics.mean_squared_error(y_test, y_test_predict)))
 print('R SQUARED', r2_score(y_test, y_test_predict)) #Looking better :) 
+
+print(lm.intercept_)
+coeff_df = pd.DataFrame(lm.coef_,x.columns,columns=['Coefficient'])
+print(coeff_df)
